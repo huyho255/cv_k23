@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const BUILD_CODE = 'cv-quiz-20261117-v6';
+    const BUILD_CODE = 'cv-quiz-20261117-v7';
 
     // ===== MATH RENDERING (KATEX) =====
     function renderMath(targetEl) {
@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Shared quiz elements
     const nextBtn = document.getElementById('next-btn');
     const quizBackBtn = document.getElementById('quiz-back-btn');
+    const quizExitBtn = document.getElementById('quiz-exit-btn');
+    const quizExitTopBtn = document.getElementById('quiz-exit-top-btn');
     const questionText = document.getElementById('question-text');
     const questionCode = document.getElementById('question-code');
     const codeBlockWrapper = document.getElementById('code-block-wrapper');
@@ -1026,7 +1028,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        isAnswered = false;
         const q = selectedQuestions[currentQuestionIndex];
 
         // Clear previous explanation
@@ -1036,6 +1037,16 @@ document.addEventListener('DOMContentLoaded', () => {
         questionNumber.textContent = `Câu ${currentQuestionIndex + 1}/${selectedQuestions.length}`;
         const percent = ((currentQuestionIndex + 1) / selectedQuestions.length) * 100;
         progressBarFill.style.width = `${percent}%`;
+
+        // Update previous question button state
+        if (quizBackBtn) {
+            quizBackBtn.disabled = currentQuestionIndex === 0;
+            if (currentQuestionIndex === 0) {
+                quizBackBtn.classList.add('disabled');
+            } else {
+                quizBackBtn.classList.remove('disabled');
+            }
+        }
 
         questionText.textContent = cleanDisplayText(q.text);
         renderMath(questionText);
@@ -1049,7 +1060,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         optionsContainer.innerHTML = '';
-        nextBtn.classList.add('hidden');
+
+        const record = currentAnswerRecords[currentQuestionIndex];
+        const isAlreadyAnswered = Boolean(record);
+        isAnswered = isAlreadyAnswered;
 
         // Render EXACT .option markup from style.css
         q.options.forEach((optText, optIdx) => {
@@ -1059,11 +1073,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const textSpan = div.querySelector('.option-text');
             textSpan.textContent = cleanDisplayText(optText);
             div.dataset.index = optIdx;
-            div.addEventListener('click', () => selectOption(optIdx, div));
+
+            if (isAlreadyAnswered) {
+                div.style.pointerEvents = 'none';
+                if (optIdx === record.selectedIdx) {
+                    div.classList.add(record.isCorrect ? 'correct' : 'wrong');
+                }
+                if (!record.isCorrect && optIdx === q.correct) {
+                    div.classList.add('correct');
+                }
+            } else {
+                div.addEventListener('click', () => selectOption(optIdx, div));
+            }
+
             optionsContainer.appendChild(div);
         });
 
         renderMath(optionsContainer);
+
+        if (isAlreadyAnswered) {
+            if (q.explanation && q.explanation.trim()) {
+                const exp = document.createElement('div');
+                exp.className = 'explanation';
+                exp.innerHTML = `<strong>💡 Giải thích:</strong> <span class="exp-text"></span>`;
+                exp.querySelector('.exp-text').textContent = cleanDisplayText(q.explanation);
+                optionsContainer.parentElement.appendChild(exp);
+                renderMath(exp);
+            }
+            nextBtn.classList.remove('hidden');
+            nextBtn.textContent = currentQuestionIndex === selectedQuestions.length - 1 ? 'Xem kết quả 🏁' : 'Tiếp theo →';
+        } else {
+            nextBtn.classList.add('hidden');
+            nextBtn.textContent = currentQuestionIndex === selectedQuestions.length - 1 ? 'Xem kết quả 🏁' : 'Tiếp theo →';
+        }
     }
 
     function selectOption(selectedIdx, optionDiv) {
@@ -1077,7 +1119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         allOptions.forEach(opt => opt.style.pointerEvents = 'none');
 
         if (isCorrect) {
-            score++;
             optionDiv.classList.add('correct');
             showToast('Chính xác! ✓', 'success');
         } else {
@@ -1088,11 +1129,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Sai rồi! ✗', 'error');
         }
 
-        currentAnswerRecords.push({
+        currentAnswerRecords[currentQuestionIndex] = {
             question: q,
             selectedIdx,
             isCorrect
-        });
+        };
+        score = currentAnswerRecords.filter(r => r && r.isCorrect).length;
 
         // Show explanation if available
         if (q.explanation && q.explanation.trim()) {
@@ -1105,6 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         nextBtn.classList.remove('hidden');
+        nextBtn.textContent = currentQuestionIndex === selectedQuestions.length - 1 ? 'Xem kết quả 🏁' : 'Tiếp theo →';
     }
 
     nextBtn.addEventListener('click', () => {
@@ -1114,11 +1157,25 @@ document.addEventListener('DOMContentLoaded', () => {
         displayQuestion();
     });
 
-    quizBackBtn.addEventListener('click', () => {
+    if (quizBackBtn) {
+        quizBackBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                const oldExp = document.querySelector('.explanation');
+                if (oldExp) oldExp.remove();
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        });
+    }
+
+    function confirmAndExitQuiz() {
         if (confirm('Bạn có chắc muốn thoát bài làm hiện tại không?')) {
             exitQuiz();
         }
-    });
+    }
+
+    if (quizExitBtn) quizExitBtn.addEventListener('click', confirmAndExitQuiz);
+    if (quizExitTopBtn) quizExitTopBtn.addEventListener('click', confirmAndExitQuiz);
 
     function exitQuiz() {
         stopTimer();
@@ -1139,6 +1196,8 @@ document.addEventListener('DOMContentLoaded', () => {
         quizScreen.classList.remove('active');
         resultScreen.classList.add('active');
 
+        const validRecords = currentAnswerRecords.filter(Boolean);
+        score = validRecords.filter(r => r.isCorrect).length;
         const total = selectedQuestions.length;
         const percentage = Math.round((score / total) * 100);
 
@@ -1153,8 +1212,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const roundRes = document.getElementById('round-result');
             if (roundRes) roundRes.textContent = `${currentRound}/3`;
 
-            const currentWrong = currentAnswerRecords.filter(r => !r.isCorrect).map(r => r.question.id);
-            const currentRight = currentAnswerRecords.filter(r => r.isCorrect).map(r => r.question.id);
+            const currentWrong = validRecords.filter(r => !r.isCorrect).map(r => r.question.id);
+            const currentRight = validRecords.filter(r => r.isCorrect).map(r => r.question.id);
 
             wrongQuestionIds = Array.from(new Set([...wrongQuestionIds, ...currentWrong]));
             correctQuestionIds = Array.from(new Set([...correctQuestionIds, ...currentRight]));
@@ -1185,7 +1244,8 @@ document.addEventListener('DOMContentLoaded', () => {
         reviewList.innerHTML = '';
         reviewSummary.textContent = `${score}/${selectedQuestions.length} câu đúng`;
 
-        currentAnswerRecords.forEach((record, idx) => {
+        const validRecords = currentAnswerRecords.filter(Boolean);
+        validRecords.forEach((record, idx) => {
             const item = document.createElement('div');
             item.className = `review-item ${record.isCorrect ? 'correct' : 'wrong'}`;
 
@@ -1304,13 +1364,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== HISTORY =====
     function saveQuizHistory() {
         const history = getQuizHistory();
+        const validRecords = currentAnswerRecords.filter(Boolean);
         const entry = {
             id: Date.now(),
             date: new Date().toLocaleString('vi-VN'),
             title: currentQuizBadgeText || 'Bài trắc nghiệm',
             score,
             total: selectedQuestions.length,
-            records: currentAnswerRecords.map(r => ({
+            records: validRecords.map(r => ({
                 questionText: r.question.text,
                 isCorrect: r.isCorrect,
                 correctOpt: r.question.options[r.question.correct],

@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=cv-quiz-20261117-v6">
+    <link rel="stylesheet" href="style.css?v=cv-quiz-20261117-v7">
 
     <!-- KaTeX Math Formula Rendering (CDN with local fallback) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -197,7 +197,10 @@
         <!-- ====== SHARED: QUIZ SCREEN ====== -->
         <section id="quiz-screen" class="card">
             <header class="quiz-header">
-                <div class="quiz-mode-badge" id="quiz-mode-badge"></div>
+                <div class="quiz-header-top">
+                    <div class="quiz-mode-badge" id="quiz-mode-badge"></div>
+                    <button id="quiz-exit-top-btn" class="quiz-exit-top-btn" title="Thoát bài thi" aria-label="Thoát">✕ Thoát</button>
+                </div>
                 <div class="progress-container">
                     <div class="progress-info">
                         <span id="question-number">Câu 1/30</span>
@@ -216,8 +219,11 @@
                 <div id="options-container" class="options-grid"></div>
             </div>
             <footer class="quiz-footer">
-                <button id="quiz-back-btn" class="ghost-btn quiz-back-btn">← Quay lại</button>
-                <button id="next-btn" class="secondary-btn hidden">Tiếp theo →</button>
+                <button id="quiz-exit-btn" class="ghost-btn quiz-exit-btn" title="Thoát bài thi">🚪 Thoát</button>
+                <div class="quiz-nav-group">
+                    <button id="quiz-back-btn" class="secondary-btn quiz-back-btn" title="Quay về câu trước" disabled>← Quay lại</button>
+                    <button id="next-btn" class="primary-btn next-btn hidden">Tiếp theo →</button>
+                </div>
             </footer>
         </section>
 
@@ -258,10 +264,10 @@
     <footer class="build-footer">Last update: <span id="build-code">loading</span></footer>
 
     <!-- Question Banks -->
-    <script src="questions.js?v=cv-quiz-20261117-v6"></script>
-    <script src="midterm_questions.js?v=cv-quiz-20261117-v6"></script>
+    <script src="questions.js?v=cv-quiz-20261117-v7"></script>
+    <script src="midterm_questions.js?v=cv-quiz-20261117-v7"></script>
 
     <!-- Quiz Engine -->
-    <script src="script.js?v=cv-quiz-20261117-v6"></script>
+    <script src="script.js?v=cv-quiz-20261117-v7"></script>
 </body>
 </html>
