@@ -8,7 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=cv-quiz-20261114">
+    <link rel="stylesheet" href="style.css?v=cv-quiz-20261117-v6">
+
+    <!-- KaTeX Math Formula Rendering (CDN with local fallback) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        if (!window.katex) {
+            document.write('<script src="vendor/katex/katex.min.js"><\/script>');
+            document.write('<script src="vendor/katex/auto-render.min.js"><\/script>');
+        }
+    </script>
 </head>
 <body>
     <div class="background-blobs">
@@ -246,10 +258,10 @@
     <footer class="build-footer">Last update: <span id="build-code">loading</span></footer>
 
     <!-- Question Banks -->
-    <script src="questions.js?v=cv-quiz-20261117-v5"></script>
-    <script src="midterm_questions.js?v=cv-quiz-20261117-v5"></script>
+    <script src="questions.js?v=cv-quiz-20261117-v6"></script>
+    <script src="midterm_questions.js?v=cv-quiz-20261117-v6"></script>
 
     <!-- Quiz Engine -->
-    <script src="script.js?v=cv-quiz-20261117-v5"></script>
+    <script src="script.js?v=cv-quiz-20261117-v6"></script>
 </body>
 </html>

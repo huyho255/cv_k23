@@ -428,9 +428,20 @@ h1, h2 { font-family: 'Poppins', sans-serif; font-weight: 700; text-align: cente
 }
 .option.correct .option-indicator { border-color: var(--success); background: var(--success); }
 .option.wrong .option-indicator { border-color: var(--error); background: var(--error); }
-.option span {
-    white-space: pre-wrap;
+.option .option-text {
+    flex: 1;
+    white-space: normal;
     overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+.katex {
+    font-size: 1.08em;
+    text-rendering: auto;
+}
+.katex-display {
+    margin: 0.3em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 /* ====== EXPLANATION ====== */

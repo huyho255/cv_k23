@@ -1,5 +1,64 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const BUILD_CODE = 'cv-quiz-20261117-v5';
+    const BUILD_CODE = 'cv-quiz-20261117-v6';
+
+    // ===== MATH RENDERING (KATEX) =====
+    function renderMath(targetEl) {
+        if (!targetEl) return;
+
+        const doRender = () => {
+            if (typeof window.renderMathInElement === 'function') {
+                try {
+                    window.renderMathInElement(targetEl, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false },
+                            { left: '\\(', right: '\\)', display: false },
+                            { left: '\\[', right: '\\]', display: true }
+                        ],
+                        throwOnError: false
+                    });
+                    return true;
+                } catch (err) {
+                    console.warn('KaTeX auto-render error:', err);
+                }
+            }
+
+            // Fallback: direct renderToString on text nodes
+            if (window.katex && typeof window.katex.renderToString === 'function') {
+                try {
+                    const walker = document.createTreeWalker(targetEl, NodeFilter.SHOW_TEXT, null, false);
+                    const nodesToReplace = [];
+                    let node;
+                    while ((node = walker.nextNode())) {
+                        if (node.nodeValue && /\$([^$\n]+)\$/.test(node.nodeValue)) {
+                            nodesToReplace.push(node);
+                        }
+                    }
+                    nodesToReplace.forEach(textNode => {
+                        const span = document.createElement('span');
+                        span.innerHTML = textNode.nodeValue.replace(/\$([^$\n]+)\$/g, (_, math) => {
+                            try {
+                                return window.katex.renderToString(math, { throwOnError: false });
+                            } catch (e) {
+                                return '$' + math + '$';
+                            }
+                        });
+                        textNode.parentNode.replaceChild(span, textNode);
+                    });
+                    return true;
+                } catch (e) {
+                    console.warn('KaTeX fallback render error:', e);
+                }
+            }
+            return false;
+        };
+
+        if (!doRender()) {
+            setTimeout(doRender, 80);
+            setTimeout(doRender, 250);
+            setTimeout(doRender, 600);
+        }
+    }
 
     // ===== DOM ELEMENTS =====
     const tabNav = document.getElementById('tab-nav');
@@ -979,6 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBarFill.style.width = `${percent}%`;
 
         questionText.textContent = cleanDisplayText(q.text);
+        renderMath(questionText);
 
         if (q.code && q.code.trim()) {
             questionCode.textContent = q.code;
@@ -995,11 +1055,15 @@ document.addEventListener('DOMContentLoaded', () => {
         q.options.forEach((optText, optIdx) => {
             const div = document.createElement('div');
             div.className = 'option';
-            div.innerHTML = `<div class="option-indicator"></div><span>${cleanDisplayText(optText)}</span>`;
+            div.innerHTML = `<div class="option-indicator"></div><span class="option-text"></span>`;
+            const textSpan = div.querySelector('.option-text');
+            textSpan.textContent = cleanDisplayText(optText);
             div.dataset.index = optIdx;
             div.addEventListener('click', () => selectOption(optIdx, div));
             optionsContainer.appendChild(div);
         });
+
+        renderMath(optionsContainer);
     }
 
     function selectOption(selectedIdx, optionDiv) {
@@ -1034,8 +1098,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (q.explanation && q.explanation.trim()) {
             const exp = document.createElement('div');
             exp.className = 'explanation';
-            exp.innerHTML = `<strong>💡 Giải thích:</strong> ${cleanDisplayText(q.explanation)}`;
+            exp.innerHTML = `<strong>💡 Giải thích:</strong> <span class="exp-text"></span>`;
+            exp.querySelector('.exp-text').textContent = cleanDisplayText(q.explanation);
             optionsContainer.parentElement.appendChild(exp);
+            renderMath(exp);
         }
 
         nextBtn.classList.remove('hidden');
@@ -1153,6 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.innerHTML = html;
             reviewList.appendChild(item);
         });
+        renderMath(reviewList);
     }
 
     function renderResultButtons() {
@@ -1311,6 +1378,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             historyModalList.appendChild(el);
         });
+        renderMath(historyModalList);
 
         historyModal.classList.remove('hidden');
     }
